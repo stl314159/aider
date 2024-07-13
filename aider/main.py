@@ -322,6 +322,13 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
         launch_gui(argv)
         return
 
+    # Check if API mode is enabled
+    if args.api and not return_coder:
+        from aider.api import run_api
+        run_api(port=args.api_port)
+        return
+
+
     if args.dark_mode:
         args.user_input_color = "#32FF32"
         args.tool_error_color = "#FF3333"
