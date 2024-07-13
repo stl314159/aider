@@ -98,10 +98,10 @@ Aider also provides an API that you can use to interact with it programmatically
 To start the API server, run:
 
 ```bash
-python aider/api.py
+aider --api
 ```
 
-By default, the server will start on port 8080. You can change this by modifying the `port` argument in the `run_api()` function call at the bottom of the `api.py` file.
+By default, the server will start on port 8080. You can change this by passing the `--api-port` argument.
 
 ### API Endpoints
 
