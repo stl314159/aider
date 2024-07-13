@@ -89,3 +89,70 @@ io = InputOutput(yes=True)
 coder = Coder.create(model=model, fnames=fnames, io=io)
 ```
 
+## API
+
+Aider also provides an API that you can use to interact with it programmatically. The API server can be started by running the `aider/api.py` script.
+
+### Starting the API server
+
+To start the API server, run:
+
+```bash
+python aider/api.py
+```
+
+By default, the server will start on port 8080. You can change this by modifying the `port` argument in the `run_api()` function call at the bottom of the `api.py` file.
+
+### API Endpoints
+
+The API provides the following endpoints:
+
+1. `/chat` (POST): Send a chat message to the AI.
+   - Request body: `{"message": "Your message here"}`
+   - Response: `{"response": "AI's response", "edits": [list of edits]}`
+
+2. `/get_model` (POST): Get the current AI model being used.
+   - Response: `{"model": "model_name"}`
+
+3. `/add_files` (POST): Add files to the chat context.
+   - Request body: `{"files": ["file1.py", "file2.js"]}`
+   - Response: `{"added": ["file1.py", "file2.js"]}`
+
+4. `/add_web_page` (POST): Add content from a web page to the chat context.
+   - Request body: `{"url": "https://example.com"}`
+   - Response: `{"content": "Scraped content"}`
+
+5. `/clear_chat_history` (POST): Clear the chat history.
+   - Response: `{"message": "Chat history cleared"}`
+
+6. `/run_command` (POST): Run a shell command.
+   - Request body: `{"command": "ls -l"}`
+   - Response: `{"output": "command output"}`
+
+7. `/undo` (POST): Undo the last commit made by Aider.
+   - Request body: `{"commit_hash": "hash_of_commit_to_undo"}`
+   - Response: `{"message": "Undo successful", "reply": "Details about the undo operation"}`
+
+8. `/get_chat_history` (POST): Get the current chat history.
+   - Response: `{"history": [list of chat messages]}`
+
+9. `/get_file_list` (POST): Get a list of all files in the project.
+   - Response: `{"files": ["file1.py", "file2.js"]}`
+
+10. `/get_file_content` (POST): Get the content of a specific file.
+    - Request body: `{"file": "file1.py"}`
+    - Response: `{"content": "File content here"}`
+
+11. `/commit` (POST): Commit changes made by Aider.
+    - Response: `{"message": "Commit successful", "result": "Commit details"}`
+
+12. `/lint` (POST): Run linter on specified files.
+    - Request body: `{"files": ["file1.py", "file2.py"]}`
+    - Response: `{"result": "Linting results"}`
+
+13. `/test` (POST): Run tests using the provided test command.
+    - Request body: `{"test_cmd": "pytest"}`
+    - Response: `{"errors": ["List of test errors if any"]}`
+
+All endpoints accept and return JSON data. Make sure to set the appropriate headers when making requests to the API.
+
