@@ -548,6 +548,21 @@ def get_parser(default_config_files, git_root):
         default=False,
     )
 
+    # Add a new argument for API mode
+    group.add_argument(
+        '--api', 
+        action='store_true', 
+        help='Run aider as an API server',
+        default=False,
+    )
+    group.add_argument(
+        '--api-port', 
+        type=int, 
+        help='Port for API server',
+        default=8080, 
+    )
+
+
     return parser
 
 
