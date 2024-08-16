@@ -3,6 +3,7 @@ import importlib
 import json
 import math
 import os
+import platform
 import sys
 from dataclasses import dataclass, fields
 from pathlib import Path
@@ -70,7 +71,6 @@ class ModelSettings:
     lazy: bool = False
     reminder_as_sys_msg: bool = False
     examples_as_sys_msg: bool = False
-    can_prefill: bool = False
     extra_headers: Optional[dict] = None
     max_tokens: Optional[int] = None
 
@@ -248,7 +248,6 @@ MODEL_SETTINGS = [
         weak_model_name="claude-3-haiku-20240307",
         use_repo_map=True,
         send_undo_reply=True,
-        can_prefill=True,
     ),
     ModelSettings(
         "openrouter/anthropic/claude-3-opus",
@@ -256,13 +255,11 @@ MODEL_SETTINGS = [
         weak_model_name="openrouter/anthropic/claude-3-haiku",
         use_repo_map=True,
         send_undo_reply=True,
-        can_prefill=True,
     ),
     ModelSettings(
         "claude-3-sonnet-20240229",
         "whole",
         weak_model_name="claude-3-haiku-20240307",
-        can_prefill=True,
     ),
     ModelSettings(
         "claude-3-5-sonnet-20240620",
@@ -270,7 +267,6 @@ MODEL_SETTINGS = [
         weak_model_name="claude-3-haiku-20240307",
         use_repo_map=True,
         examples_as_sys_msg=True,
-        can_prefill=True,
         accepts_images=True,
         max_tokens=8192,
         extra_headers={"anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15"},
@@ -281,7 +277,6 @@ MODEL_SETTINGS = [
         weak_model_name="claude-3-haiku-20240307",
         use_repo_map=True,
         examples_as_sys_msg=True,
-        can_prefill=True,
         max_tokens=8192,
         extra_headers={
             "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
@@ -295,7 +290,6 @@ MODEL_SETTINGS = [
         weak_model_name="openrouter/anthropic/claude-3-haiku-20240307",
         use_repo_map=True,
         examples_as_sys_msg=True,
-        can_prefill=True,
         accepts_images=True,
         max_tokens=8192,
         extra_headers={
@@ -312,7 +306,6 @@ MODEL_SETTINGS = [
         weak_model_name="vertex_ai/claude-3-haiku@20240307",
         use_repo_map=True,
         examples_as_sys_msg=True,
-        can_prefill=True,
         accepts_images=True,
     ),
     ModelSettings(
@@ -321,13 +314,11 @@ MODEL_SETTINGS = [
         weak_model_name="vertex_ai/claude-3-haiku@20240307",
         use_repo_map=True,
         send_undo_reply=True,
-        can_prefill=True,
     ),
     ModelSettings(
         "vertex_ai/claude-3-sonnet@20240229",
         "whole",
         weak_model_name="vertex_ai/claude-3-haiku@20240307",
-        can_prefill=True,
     ),
     # Cohere
     ModelSettings(
@@ -486,14 +477,10 @@ class Model:
         if "gpt-3.5" in model or "gpt-4" in model:
             self.reminder_as_sys_msg = True
 
-        if "anthropic" in model:
-            self.can_prefill = True
-
         if "3.5-sonnet" in model or "3-5-sonnet" in model:
             self.edit_format = "diff"
             self.use_repo_map = True
             self.examples_as_sys_msg = True
-            self.can_prefill = True
 
         # use the defaults
         if self.edit_format == "diff":
@@ -529,7 +516,11 @@ class Model:
 
     def token_count(self, messages):
         if type(messages) is list:
-            return litellm.token_counter(model=self.name, messages=messages)
+            try:
+                return litellm.token_counter(model=self.name, messages=messages)
+            except Exception as err:
+                print(f"Unable to count tokens: {err}")
+                return 0
 
         if not self.tokenizer:
             return
@@ -688,6 +679,13 @@ def sanity_check_model(io, model):
         io.tool_error(f"Model {model}: Missing these environment variables:")
         for key in model.missing_keys:
             io.tool_error(f"- {key}")
+
+        if platform.system() == "Windows" or True:
+            io.tool_output(
+                "If you just set these environment variables using `setx` you may need to restart"
+                " your terminal or command prompt for the changes to take effect."
+            )
+
     elif not model.keys_in_environment:
         show = True
         io.tool_output(f"Model {model}: Unknown which environment variables are required.")
